@@ -17,9 +17,8 @@ public class ExplodeController : MonoBehaviour
     public TMP_Text scoreText;
     public GameObject missionPanel;
     public TMP_Text statusText;
-    public AudioSource completionAudio; // Drag the AudioSource here in Inspector
-    public GameObject assemblyCompleteText; // Optional: UI text to show after completion
-
+    public AudioSource completionAudio;
+    public AudioSource confettiAudio;
 
     private Vector3[] originalPositions;
     private Vector3[] explodedPositions;
@@ -42,9 +41,10 @@ public class ExplodeController : MonoBehaviour
         mainCamera = Camera.main;
 
         interactableObjects = new Transform[] {
-        leftArm, rightArm, armor_part_1, armor_part_2, armor_part_3,
-        armor_part_4, armor_part_5, head, legs
-    };
+            leftArm, rightArm, armor_part_1, armor_part_2, armor_part_3,
+            armor_part_4, armor_part_5, head, legs
+        };
+
 
         originalPositions = new Vector3[interactableObjects.Length];
         explodedPositions = new Vector3[interactableObjects.Length];
@@ -53,39 +53,31 @@ public class ExplodeController : MonoBehaviour
         for (int i = 0; i < interactableObjects.Length; i++)
         {
             originalPositions[i] = interactableObjects[i].localPosition;
-            explodedPositions[i] = originalPositions[i] + new Vector3((i - 4) * 0.4f, 0, 0);  // Explode X-axis
+
+            // Custom explode offset for armor_part_3
+            if (i == 4)
+                explodedPositions[i] = originalPositions[i] + new Vector3(0.5f, 0.3f, 0f); // right and up
+            else
+                explodedPositions[i] = originalPositions[i] + new Vector3((i - 4) * 0.4f, 0f, 0f);
+
             isPartAssembled[i] = false;
         }
 
-        StartCoroutine(ExplodeAfterDelay());  // Wait and explode
+        StartCoroutine(ExplodeAfterDelay());
+
         if (hintText != null)
-            StartCoroutine(FadeOutHint(3f));
         {
-            // Existing setup...
-            if (hintText != null)
-                StartCoroutine(HideHintAfterDelay(3f));
+            StartCoroutine(HideHintAfterDelay(3f));
+            hintText.text = "Emergency detected! A rescue robot was damaged during a mission on Earth. Help reassemble it to resume its task of saving lives!";
+            StartCoroutine(FadeOutHint(5f));
         }
 
-        IEnumerator HideHintAfterDelay(float delay)
-        {
-            yield return new WaitForSeconds(delay);
-            hintText.text = "";
-        }
-        {
-            // Setup and explode
-            if (missionPanel != null)
-                missionPanel.SetActive(true);
+        if (missionPanel != null)
+            missionPanel.SetActive(true);
 
-            if (hintText != null)
-                hintText.text = "Emergency detected! A rescue robot was damaged during a mission on Earth. Help reassemble it to resume its task of saving lives!";
-
-            if (hintText != null)
-                StartCoroutine(FadeOutHint(5f));  // Fades after 5 sec
-
-            StartCoroutine(HideMissionPanelAfterDelay(5f));
-        }
+        StartCoroutine(HideMissionPanelAfterDelay(5f));
+        
     }
-
 
     IEnumerator ExplodeAfterDelay()
     {
@@ -116,6 +108,7 @@ public class ExplodeController : MonoBehaviour
 
         obj.localPosition = targetPos;
     }
+
     IEnumerator HideMissionPanelAfterDelay(float delay)
     {
         yield return new WaitForSeconds(delay);
@@ -123,22 +116,29 @@ public class ExplodeController : MonoBehaviour
             missionPanel.SetActive(false);
     }
 
-
-
     void Update()
     {
         HandleTouch();
+
         if (!isAssembled && CheckIfRobotAssembled())
         {
             isAssembled = true;
             PlayCompletionSound();
+            PlayConfettiEffect();
+            
         }
     }
+
     bool CheckIfRobotAssembled()
     {
-        // Your custom logic to detect full assembly
-        return true; // Replace this with real check
+        foreach (bool part in isPartAssembled)
+        {
+            if (!part)
+                return false;
+        }
+        return true;
     }
+
     void PlayCompletionSound()
     {
         if (completionAudio != null)
@@ -146,18 +146,26 @@ public class ExplodeController : MonoBehaviour
             completionAudio.Play();
         }
 
-        if (assemblyCompleteText != null)
-        {
-            assemblyCompleteText.SetActive(true);
-        }
-
-        // Optional: Trigger robot animation
+        
     }
+
+    void PlayConfettiEffect()
+    {
+        if (confettiEffect != null)
+        {
+            confettiEffect.gameObject.SetActive(true);
+            if (!confettiEffect.isPlaying)
+            {
+                confettiEffect.Play();
+                StartCoroutine(PlayConfettiSoundAfterDelay(confettiEffect.main.duration));
+            }
+        }
+    }
+
 
     void HandleTouch()
     {
 #if UNITY_EDITOR
-        // Mouse Input (for Unity Editor)
         if (Input.GetMouseButtonDown(0))
         {
             Ray ray = mainCamera.ScreenPointToRay(Input.mousePosition);
@@ -165,8 +173,8 @@ public class ExplodeController : MonoBehaviour
             {
                 if (IsInteractable(hit.transform))
                 {
-                    selectedObject = hit.transform;
 
+                    selectedObject = hit.transform;
                     dragPlane = new Plane(mainCamera.transform.forward * -1, selectedObject.position);
                     if (dragPlane.Raycast(ray, out float enter))
                     {
@@ -203,65 +211,66 @@ public class ExplodeController : MonoBehaviour
             selectedObject = null;
             UpdateProgress();
         }
+#else
+        if (Touchscreen.current == null || Touchscreen.current.touches.Count == 0) return;
 
-else
-    // Touchscreen Input (for mobile devices)
-    if (Touchscreen.current == null || Touchscreen.current.touches.Count == 0) return;
-
-    if (Touchscreen.current.touches.Count == 2)
-    {
-        Vector2 delta = Touchscreen.current.touches[0].delta.ReadValue();
-        robotRoot.Rotate(0, -delta.x * 0.2f, 0);
-        return;
-    }
-
-    var touch = Touchscreen.current.primaryTouch;
-
-    if (touch.press.wasPressedThisFrame && selectedObject == null)
-    {
-        Ray ray = mainCamera.ScreenPointToRay(touch.position.ReadValue());
-        if (Physics.Raycast(ray, out RaycastHit hit))
+        if (Touchscreen.current.touches.Count == 2)
         {
-            if (IsInteractable(hit.transform))
+            Vector2 delta = Touchscreen.current.touches[0].delta.ReadValue();
+            robotRoot.Rotate(0, -delta.x * 0.2f, 0);
+            return;
+        }
+
+        var touch = Touchscreen.current.primaryTouch;
+
+        if (touch.press.wasPressedThisFrame && selectedObject == null)
+        {
+            Ray ray = mainCamera.ScreenPointToRay(touch.position.ReadValue());
+            if (Physics.Raycast(ray, out RaycastHit hit))
             {
-                selectedObject = hit.transform;
-                dragPlane = new Plane(mainCamera.transform.forward * -1, selectedObject.position);
-                float enter;
-                dragPlane.Raycast(ray, out enter);
-                Vector3 hitPoint = ray.GetPoint(enter);
-                dragOffset = selectedObject.position - hitPoint;
+                if (IsInteractable(hit.transform))
+                {
+                    selectedObject = hit.transform;
+                                if (ghostRobot != null)
+                ghostRobot.SetActive(false);
+
+                    dragPlane = new Plane(mainCamera.transform.forward * -1, selectedObject.position);
+                    float enter;
+                    dragPlane.Raycast(ray, out enter);
+                    Vector3 hitPoint = ray.GetPoint(enter);
+                    dragOffset = selectedObject.position - hitPoint;
+                }
             }
         }
-    }
 
-    if (touch.press.isPressed && selectedObject != null)
-    {
-        Ray ray = mainCamera.ScreenPointToRay(touch.position.ReadValue());
-        if (dragPlane.Raycast(ray, out float enter))
+        if (touch.press.isPressed && selectedObject != null)
         {
-            Vector3 hitPoint = ray.GetPoint(enter);
-            selectedObject.position = Vector3.Lerp(selectedObject.position, hitPoint + dragOffset, 0.2f);
-        }
-    }
-
-    if (touch.press.wasReleasedThisFrame && selectedObject != null)
-    {
-        int index = System.Array.IndexOf(interactableObjects, selectedObject);
-        float dist = Vector3.Distance(selectedObject.localPosition, originalPositions[index]);
-
-        if (dist < snapDistance)
-        {
-            selectedObject.localPosition = originalPositions[index];
-            isPartAssembled[index] = true;
-        }
-        else
-        {
-            isPartAssembled[index] = false;
+            Ray ray = mainCamera.ScreenPointToRay(touch.position.ReadValue());
+            if (dragPlane.Raycast(ray, out float enter))
+            {
+                Vector3 hitPoint = ray.GetPoint(enter);
+                selectedObject.position = Vector3.Lerp(selectedObject.position, hitPoint + dragOffset, 0.2f);
+            }
         }
 
-        selectedObject = null;
-        UpdateProgress();
-    }
+        if (touch.press.wasReleasedThisFrame && selectedObject != null)
+        {
+            int index = System.Array.IndexOf(interactableObjects, selectedObject);
+            float dist = Vector3.Distance(selectedObject.localPosition, originalPositions[index]);
+
+            if (dist < snapDistance)
+            {
+                selectedObject.localPosition = originalPositions[index];
+                isPartAssembled[index] = true;
+            }
+            else
+            {
+                isPartAssembled[index] = false;
+            }
+
+            selectedObject = null;
+            UpdateProgress();
+        }
 #endif
     }
 
@@ -287,21 +296,19 @@ else
                 else if (assembled < interactableObjects.Length - 1)
                     statusText.text = "Only few parts left!";
                 else
-                    statusText.text = " I can almost feel my circuits coming alive!";
+                    statusText.text = "I can almost feel my circuits coming alive!";
             }
             else
             {
-                statusText.text = "Systems online. Thank you, Engineer. Mission can now resume!";
+                statusText.text = "Well done, Engineer! You’ve reassembled our hero. Systems online. Mission success!";
             }
         }
 
         if (assembledText != null)
             assembledText.SetActive(progress >= 1f);
+
         if (scoreText != null)
             scoreText.text = "Score: " + assembled + " / " + interactableObjects.Length;
-
-        if (assembledText != null)
-            assembledText.SetActive(progress >= 1f);
     }
 
     IEnumerator FadeOutHint(float delay)
@@ -321,6 +328,23 @@ else
         }
 
         hintText.color = new Color(originalColor.r, originalColor.g, originalColor.b, 0f);
+    }
+    IEnumerator PlayConfettiSoundAfterDelay(float delay)
+    {
+        yield return new WaitForSeconds(delay);
+
+        if (confettiAudio != null)
+        {
+            confettiAudio.Play();
+        }
+    }
+
+
+    IEnumerator HideHintAfterDelay(float delay)
+    {
+        yield return new WaitForSeconds(delay);
+        if (hintText != null)
+            hintText.text = "";
     }
 
     bool IsInteractable(Transform t)
