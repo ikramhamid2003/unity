@@ -19,6 +19,12 @@ public class ExplodeController : MonoBehaviour
     public TMP_Text statusText;
     public AudioSource completionAudio;
     public AudioSource confettiAudio;
+    public Animator leftArmAnimator;
+    public Animator rightArmAnimator;
+    public RuntimeAnimatorController leftArmController;
+    public RuntimeAnimatorController rightArmController;
+
+
 
     private Vector3[] originalPositions;
     private Vector3[] explodedPositions;
@@ -79,6 +85,7 @@ public class ExplodeController : MonoBehaviour
         
     }
 
+
     IEnumerator ExplodeAfterDelay()
     {
         yield return new WaitForSeconds(0.5f);
@@ -125,9 +132,10 @@ public class ExplodeController : MonoBehaviour
             isAssembled = true;
             PlayCompletionSound();
             PlayConfettiEffect();
-            
+            PlayArmAnimations();
         }
     }
+    
 
     bool CheckIfRobotAssembled()
     {
@@ -161,6 +169,7 @@ public class ExplodeController : MonoBehaviour
             }
         }
     }
+    
 
 
     void HandleTouch()
@@ -351,4 +360,19 @@ public class ExplodeController : MonoBehaviour
     {
         return System.Array.IndexOf(interactableObjects, t) >= 0;
     }
+    public void PlayArmAnimations()
+    {
+        if (leftArmAnimator != null)
+        {
+            leftArmAnimator.runtimeAnimatorController = leftArmController;
+            leftArmAnimator.Play("LeftArmRaise");
+        }
+
+        if (rightArmAnimator != null)
+        {
+            rightArmAnimator.runtimeAnimatorController = rightArmController;
+            rightArmAnimator.Play("RightArmRaise");
+        }
+    }
+
 }

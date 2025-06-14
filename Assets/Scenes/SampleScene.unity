@@ -178,6 +178,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: armor_part_3
       objectReference: {fileID: 0}
+    - target: {fileID: 3855550400349515429, guid: d11b03780f97c9c40b06334d1f3fb857, type: 3}
+      propertyPath: m_Mesh
+      value: 
+      objectReference: {fileID: -1525253381413818895, guid: 7017d5f7b3c873d488b7f773a86662cc, type: 3}
     - target: {fileID: 6563268082044603938, guid: d11b03780f97c9c40b06334d1f3fb857, type: 3}
       propertyPath: m_Name
       value: Robot_green
@@ -214,9 +218,15 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 1586242992137303163, guid: d11b03780f97c9c40b06334d1f3fb857, type: 3}
       insertIndex: -1
       addedObject: {fileID: 993218255}
+    - targetCorrespondingSourceObject: {fileID: 1586242992137303163, guid: d11b03780f97c9c40b06334d1f3fb857, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 993218258}
     - targetCorrespondingSourceObject: {fileID: 7860491029674877164, guid: d11b03780f97c9c40b06334d1f3fb857, type: 3}
       insertIndex: -1
       addedObject: {fileID: 234537492}
+    - targetCorrespondingSourceObject: {fileID: 7860491029674877164, guid: d11b03780f97c9c40b06334d1f3fb857, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 234537495}
     - targetCorrespondingSourceObject: {fileID: 7775354281860807818, guid: d11b03780f97c9c40b06334d1f3fb857, type: 3}
       insertIndex: -1
       addedObject: {fileID: 868781762}
@@ -760,6 +770,27 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 0.90377843, y: 0.12927985, z: 0.17351897}
   m_Center: {x: 0.5836858, y: 1.4736863, z: -0.052614294}
+--- !u!95 &234537495
+Animator:
+  serializedVersion: 5
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 234537488}
+  m_Enabled: 1
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: cbedf01d89f302643ae7ed372eb90d2f, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorStateOnDisable: 0
+  m_WriteDefaultValuesOnDisable: 0
 --- !u!1 &266582755
 GameObject:
   m_ObjectHideFlags: 0
@@ -1156,6 +1187,10 @@ MonoBehaviour:
   statusText: {fileID: 1572525682}
   completionAudio: {fileID: 353959499}
   confettiAudio: {fileID: 302549949}
+  leftArmAnimator: {fileID: 993218258}
+  rightArmAnimator: {fileID: 234537495}
+  leftArmController: {fileID: 9100000, guid: 7c89c8884ef2bc941bb484d9b24b6b3a, type: 2}
+  rightArmController: {fileID: 9100000, guid: fba8b03b31b5dc5438a07b112c1cea68, type: 2}
   moveSpeed: 2
   snapDistance: 0.3
 --- !u!82 &353959499
@@ -1775,6 +1810,27 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 0.90377843, y: 0.12927985, z: 0.17351897}
   m_Center: {x: -0.5836858, y: 1.4736863, z: -0.052614294}
+--- !u!95 &993218258
+Animator:
+  serializedVersion: 5
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 993218251}
+  m_Enabled: 1
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: cbedf01d89f302643ae7ed372eb90d2f, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorStateOnDisable: 0
+  m_WriteDefaultValuesOnDisable: 0
 --- !u!1 &1208178765
 GameObject:
   m_ObjectHideFlags: 0
